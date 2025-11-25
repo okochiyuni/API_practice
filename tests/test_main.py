@@ -8,23 +8,40 @@ client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def reset_call_count() -> None:
-    app.state.call_count = 0
+def reset_state() -> None:
+    app.state.todos = []
+    app.state.next_id = 1
 
 
-def test_read_root_returns_greeting() -> None:
+def test_read_root_returns_description() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "ハローFastAPI、今1回目の呼び出しです。"}
+    assert response.json() == {"message": "シンプルなTODO管理APIです。"}
 
 
-def test_read_root_increments_call_count() -> None:
-    response_first = client.get("/")
-    response_second = client.get("/")
+def test_list_todos_initially_empty() -> None:
+    response = client.get("/todos")
 
-    assert response_first.status_code == 200
-    assert response_first.json() == {"message": "ハローFastAPI、今1回目の呼び出しです。"}
+    assert response.status_code == 200
+    assert response.json() == []
 
-    assert response_second.status_code == 200
-    assert response_second.json() == {"message": "ハローFastAPI、今2回目の呼び出しです。"}
+
+def test_create_todo_returns_created_item() -> None:
+    response = client.post("/todos", json={"title": "牛乳を買う"})
+
+    assert response.status_code == 201
+    assert response.json() == {"id": 1, "title": "牛乳を買う", "completed": False}
+
+
+def test_list_todos_after_creation() -> None:
+    client.post("/todos", json={"title": "洗濯物を取り込む"})
+    client.post("/todos", json={"title": "メール返信"})
+
+    response = client.get("/todos")
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {"id": 1, "title": "洗濯物を取り込む", "completed": False},
+        {"id": 2, "title": "メール返信", "completed": False},
+    ]
