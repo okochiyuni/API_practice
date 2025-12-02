@@ -65,7 +65,7 @@ def create_todo(todo: TodoCreate) -> Todo:
     return new_todo
 
 
-@app.patch("/todos/{todo_id}/category")
+@app.put("/todos/{todo_id}/category")
 def update_category(todo_id: int, payload: CategoryUpdate) -> Todo:
     """指定したTODOの分類を更新する。"""
     _ensure_category_exists(payload.category)

@@ -28,6 +28,18 @@ def test_list_todos_initially_empty() -> None:
     assert response.json() == []
 
 
+def test_create_category() -> None:
+    response = client.post("/categories", json={"name": "買い物"})
+
+    assert response.status_code == 201
+    assert response.json() == {"name": "買い物"}
+
+    categories = client.get("/categories")
+
+    assert categories.status_code == 200
+    assert categories.json() == [{"name": "買い物"}]
+
+
 def test_create_todo_returns_created_item() -> None:
     client.post("/categories", json={"name": "家庭"})
 
@@ -89,14 +101,18 @@ def test_update_category() -> None:
         json={"title": "資料作成", "deadline": "2024-06-10", "category": "仕事"},
     )
 
-    response = client.patch(
-        "/todos/1/category", json={"category": "学校"}
+    response = client.put(
+        "/todos/1", 
+        json={"title": "資料作成", "deadline": "2024-06-10", "category": "学校"},
     )
 
     assert response.status_code == 200
     assert response.json()["category"] == "学校"
 
-    invalid = client.patch("/todos/1/category", json={"category": "家庭"})
+    invalid = client.put(
+        "/todos/1", 
+        json={"title": "資料作成", "deadline": "2024-06-10", "category": "家庭"},
+    )
 
     assert invalid.status_code == 400
     assert invalid.json()["detail"] == "指定した分類は登録されていません"
