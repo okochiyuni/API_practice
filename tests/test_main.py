@@ -102,13 +102,17 @@ def test_update_category() -> None:
     )
 
     response = client.put(
-        "/todos/1/category", json={"category": "学校"}
+        "/todos/1", 
+        json={"title": "資料作成", "deadline": "2024-06-10", "category": "学校"},
     )
 
     assert response.status_code == 200
     assert response.json()["category"] == "学校"
 
-    invalid = client.put("/todos/1/category", json={"category": "家庭"})
+    invalid = client.put(
+        "/todos/1", 
+        json={"title": "資料作成", "deadline": "2024-06-10", "category": "家庭"},
+    )
 
     assert invalid.status_code == 400
     assert invalid.json()["detail"] == "指定した分類は登録されていません"
