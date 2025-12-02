@@ -6,6 +6,7 @@ class TodoCreate(BaseModel):
     """新しいTODOを登録するときの入力データ。"""
 
     title: str = Field(min_length=1, description="やることのタイトル")
+    deadline: str = Field(min_length=1, description="締め切り")
 
 
 class Todo(TodoCreate):
@@ -35,7 +36,12 @@ def list_todos() -> list[Todo]:
 @app.post("/todos", status_code=201)
 def create_todo(todo: TodoCreate) -> Todo:
     """新しいTODOを追加する。"""
-    new_todo = Todo(id=app.state.next_id, title=todo.title, completed=False)
+    new_todo = Todo(
+        id=app.state.next_id,
+        title=todo.title,
+        deadline=todo.deadline,
+        completed=False,
+    )
     app.state.next_id += 1
     app.state.todos.append(new_todo)
 
