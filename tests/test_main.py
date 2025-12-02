@@ -118,6 +118,25 @@ def test_update_category() -> None:
     assert invalid.json()["detail"] == "指定した分類は登録されていません"
 
 
+def test_complete_todo_with_patch() -> None:
+    client.post("/categories", json={"name": "家庭"})
+
+    client.post(
+        "/todos",
+        json={"title": "ゴミを出す", "deadline": "2024-06-05", "category": "家庭"},
+    )
+
+    response = client.patch("/todos/1", json={"completed": True})
+
+    assert response.status_code == 200
+    assert response.json()["completed"] is True
+
+    todos = client.get("/todos")
+
+    assert todos.status_code == 200
+    assert todos.json()[0]["completed"] is True
+
+
 def test_category_list_and_duplicates() -> None:
     first = client.post("/categories", json={"name": "仕事"})
     second = client.post("/categories", json={"name": "学校"})
