@@ -172,3 +172,93 @@ def test_todo_requires_existing_category() -> None:
     )
 
     assert valid.status_code == 201
+
+
+def test_list_todos_default_pending_first() -> None:
+    client.post("/categories", json={"name": "家庭"})
+
+    client.post(
+        "/todos",
+        json={"title": "掃除", "deadline": "2024-06-02", "category": "家庭"},
+    )
+    client.post(
+        "/todos",
+        json={"title": "洗濯", "deadline": "2024-06-03", "category": "家庭"},
+    )
+
+    client.patch("/todos/1", json={"completed": True})
+
+    response = client.get("/todos")
+
+    assert response.status_code == 200
+    assert [todo["id"] for todo in response.json()] == [2, 1]
+
+
+def test_sort_todos_by_deadline_and_order() -> None:
+    client.post("/categories", json={"name": "家庭"})
+
+    client.post(
+        "/todos",
+        json={"title": "掃除", "deadline": "2024-06-02", "category": "家庭"},
+    )
+    client.post(
+        "/todos",
+        json={"title": "洗濯", "deadline": "2024-06-03", "category": "家庭"},
+    )
+    client.post(
+        "/todos",
+        json={"title": "料理", "deadline": "2024-06-03", "category": "家庭"},
+    )
+
+    response = client.get("/todos", params={"sort": "deadline", "order": "desc"})
+
+    assert response.status_code == 200
+    assert [todo["title"] for todo in response.json()] == ["洗濯", "料理", "掃除"]
+
+
+def test_filter_by_status_category_and_due_date() -> None:
+    client.post("/categories", json={"name": "家庭"})
+    client.post("/categories", json={"name": "仕事"})
+
+    client.post(
+        "/todos",
+        json={"title": "掃除", "deadline": "2024-06-02", "category": "家庭"},
+    )
+    client.post(
+        "/todos",
+        json={"title": "資料作成", "deadline": "2024-06-03", "category": "仕事"},
+    )
+    client.post(
+        "/todos",
+        json={"title": "買い物", "deadline": "2024-06-05", "category": "家庭"},
+    )
+
+    client.patch("/todos/2", json={"completed": True})
+
+    response = client.get(
+        "/todos",
+        params={"status": "pending", "category": "家庭", "due_by": "2024-06-03"},
+    )
+
+    assert response.status_code == 200
+    assert [todo["title"] for todo in response.json()] == ["掃除"]
+
+
+def test_invalid_query_parameters_return_400() -> None:
+    client.post("/categories", json={"name": "家庭"})
+    client.post(
+        "/todos",
+        json={"title": "掃除", "deadline": "2024-06-02", "category": "家庭"},
+    )
+
+    invalid_sort = client.get("/todos", params={"sort": "invalid"})
+    invalid_order = client.get("/todos", params={"order": "invalid"})
+    invalid_status = client.get("/todos", params={"status": "unknown"})
+    invalid_due_by = client.get("/todos", params={"due_by": "20240602"})
+    invalid_category = client.get("/todos", params={"category": "未登録"})
+
+    assert invalid_sort.status_code == 400
+    assert invalid_order.status_code == 400
+    assert invalid_status.status_code == 400
+    assert invalid_due_by.status_code == 400
+    assert invalid_category.status_code == 400

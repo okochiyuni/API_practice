@@ -1,4 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from datetime import date
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
 
@@ -52,9 +55,42 @@ def read_root() -> dict[str, str]:
 
 
 @app.get("/todos")
-def list_todos() -> list[Todo]:
+def list_todos(
+    *,
+    sort: Optional[str] = Query(
+        None, description="並び替え方法(created/deadline/category)"
+    ),
+    order: str = Query("asc", description="並び順(asc/desc)"),
+    status: str = Query("all", description="状態フィルタ(all/completed/pending)"),
+    category: Optional[str] = Query(None, description="分類フィルタ"),
+    due_by: Optional[str] = Query(None, description="この日までに締切のものを返す"),
+) -> list[Todo]:
     """登録済みのTODO一覧を返す。"""
-    return app.state.todos
+
+    _validate_query_params(sort=sort, order=order, status=status)
+
+    todos: list[Todo] = list(app.state.todos)
+
+    if category is not None:
+        _ensure_category_exists(category)
+        todos = [todo for todo in todos if todo.category == category]
+
+    if status == "completed":
+        todos = [todo for todo in todos if todo.completed]
+    elif status == "pending":
+        todos = [todo for todo in todos if not todo.completed]
+
+    if due_by is not None:
+        due_date = _parse_date(due_by, "due_by")
+        todos = [todo for todo in todos if _parse_date(todo.deadline, "deadline") <= due_date]
+
+    if sort is None:
+        todos = sorted(todos, key=lambda todo: (todo.completed, todo.id), reverse=order == "desc")
+    else:
+        key_func = _build_sort_key(sort)
+        todos = sorted(todos, key=key_func, reverse=order == "desc")
+
+    return todos
 
 
 @app.post("/todos", status_code=201)
@@ -135,3 +171,39 @@ def _ensure_category_exists(name: str) -> None:
     """指定された分類名が登録済みかを確認し、存在しない場合は 400 を返す。"""
     if not any(category.name == name for category in app.state.categories):
         raise HTTPException(status_code=400, detail="指定した分類は登録されていません")
+
+
+def _validate_query_params(*, sort: Optional[str], order: str, status: str) -> None:
+    """クエリパラメータの値を検証し、不正な場合は 400 を返す。"""
+
+    valid_sorts = {None, "created", "deadline", "category"}
+    valid_orders = {"asc", "desc"}
+    valid_status = {"all", "completed", "pending"}
+
+    if sort not in valid_sorts:
+        raise HTTPException(status_code=400, detail="sort には created/deadline/category を指定してください")
+
+    if order not in valid_orders:
+        raise HTTPException(status_code=400, detail="order には asc/desc を指定してください")
+
+    if status not in valid_status:
+        raise HTTPException(status_code=400, detail="status には all/completed/pending を指定してください")
+
+
+def _parse_date(value: str, field_name: str) -> date:
+    """ISO形式の日付文字列を date に変換し、失敗時は 400 を返す。"""
+
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:  # noqa: B904
+        raise HTTPException(status_code=400, detail=f"{field_name} は YYYY-MM-DD 形式で指定してください") from exc
+
+
+def _build_sort_key(sort: str):
+    """ソートキー生成関数を返す。"""
+
+    if sort == "created":
+        return lambda todo: todo.id
+    if sort == "deadline":
+        return lambda todo: _parse_date(todo.deadline, "deadline")
+    return lambda todo: todo.category
