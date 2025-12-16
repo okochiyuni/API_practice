@@ -67,12 +67,13 @@ def list_todos(
 ) -> list[Todo]:
     """登録済みのTODO一覧を返す。"""
 
-    _validate_query_params(sort=sort, order=order, status=status)
+    due_date = _validate_query_params(
+        sort=sort, order=order, status=status, category=category, due_by=due_by
+    )
 
     todos: list[Todo] = list(app.state.todos)
 
     if category is not None:
-        _ensure_category_exists(category)
         todos = [todo for todo in todos if todo.category == category]
 
     if status == "completed":
@@ -80,12 +81,17 @@ def list_todos(
     elif status == "pending":
         todos = [todo for todo in todos if not todo.completed]
 
-    if due_by is not None:
-        due_date = _parse_date(due_by, "due_by")
-        todos = [todo for todo in todos if _parse_date(todo.deadline, "deadline") <= due_date]
+    if due_date is not None:
+        todos = [
+            todo
+            for todo in todos
+            if _parse_date(todo.deadline, "deadline") <= due_date
+        ]
 
     if sort is None:
-        todos = sorted(todos, key=lambda todo: (todo.completed, todo.id), reverse=order == "desc")
+        todos = sorted(
+            todos, key=lambda todo: (todo.completed, todo.id), reverse=order == "desc"
+        )
     else:
         key_func = _build_sort_key(sort)
         todos = sorted(todos, key=key_func, reverse=order == "desc")
@@ -173,7 +179,14 @@ def _ensure_category_exists(name: str) -> None:
         raise HTTPException(status_code=400, detail="指定した分類は登録されていません")
 
 
-def _validate_query_params(*, sort: Optional[str], order: str, status: str) -> None:
+def _validate_query_params(
+    *,
+    sort: Optional[str],
+    order: str,
+    status: str,
+    category: Optional[str],
+    due_by: Optional[str],
+) -> Optional[date]:
     """クエリパラメータの値を検証し、不正な場合は 400 を返す。"""
 
     valid_sorts = {None, "created", "deadline", "category"}
@@ -181,13 +194,25 @@ def _validate_query_params(*, sort: Optional[str], order: str, status: str) -> N
     valid_status = {"all", "completed", "pending"}
 
     if sort not in valid_sorts:
-        raise HTTPException(status_code=400, detail="sort には created/deadline/category を指定してください")
+        raise HTTPException(
+            status_code=400, detail="sort には created/deadline/category を指定してください"
+        )
 
     if order not in valid_orders:
         raise HTTPException(status_code=400, detail="order には asc/desc を指定してください")
 
     if status not in valid_status:
-        raise HTTPException(status_code=400, detail="status には all/completed/pending を指定してください")
+        raise HTTPException(
+            status_code=400, detail="status には all/completed/pending を指定してください"
+        )
+
+    if category is not None:
+        _ensure_category_exists(category)
+
+    if due_by is None:
+        return None
+
+    return _parse_date(due_by, "due_by")
 
 
 def _parse_date(value: str, field_name: str) -> date:
