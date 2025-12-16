@@ -17,6 +17,16 @@ class Todo(TodoCreate):
     completed: bool = False
 
 
+class TodoUpdate(TodoCreate):
+    """TODO全体を更新するときの入力データ。"""
+
+
+class TodoCompletionUpdate(BaseModel):
+    """完了状態だけを更新するときの入力データ。"""
+
+    completed: bool = Field(description="完了済みかどうか")
+
+
 class CategoryUpdate(BaseModel):
     """分類のみを更新するための入力データ。"""
 
@@ -65,6 +75,21 @@ def create_todo(todo: TodoCreate) -> Todo:
     return new_todo
 
 
+@app.put("/todos/{todo_id}")
+def update_todo(todo_id: int, payload: TodoUpdate) -> Todo:
+    """指定したTODOの内容を上書きする。"""
+    _ensure_category_exists(payload.category)
+
+    for todo in app.state.todos:
+        if todo.id == todo_id:
+            todo.title = payload.title
+            todo.deadline = payload.deadline
+            todo.category = payload.category
+            return todo
+
+    raise HTTPException(status_code=404, detail="TODOが見つかりませんでした")
+
+
 @app.put("/todos/{todo_id}/category")
 def update_category(todo_id: int, payload: CategoryUpdate) -> Todo:
     """指定したTODOの分類を更新する。"""
@@ -73,6 +98,18 @@ def update_category(todo_id: int, payload: CategoryUpdate) -> Todo:
     for todo in app.state.todos:
         if todo.id == todo_id:
             todo.category = payload.category
+            return todo
+
+    raise HTTPException(status_code=404, detail="TODOが見つかりませんでした")
+
+
+@app.patch("/todos/{todo_id}")
+def update_completed(todo_id: int, payload: TodoCompletionUpdate) -> Todo:
+    """指定したTODOの完了状態を更新する。"""
+
+    for todo in app.state.todos:
+        if todo.id == todo_id:
+            todo.completed = payload.completed
             return todo
 
     raise HTTPException(status_code=404, detail="TODOが見つかりませんでした")
