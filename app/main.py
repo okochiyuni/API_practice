@@ -207,7 +207,11 @@ def _validate_query_params(
         )
 
     if category is not None:
-        _ensure_category_exists(category)
+        registered_categories = {registered.name for registered in app.state.categories}
+        if category not in registered_categories:
+            raise HTTPException(
+                status_code=400, detail="指定した分類は登録されていません"
+            )
 
     if due_by is None:
         return None

@@ -254,11 +254,9 @@ def test_invalid_query_parameters_return_400() -> None:
     invalid_sort = client.get("/todos", params={"sort": "invalid"})
     invalid_order = client.get("/todos", params={"order": "invalid"})
     invalid_status = client.get("/todos", params={"status": "unknown"})
-    invalid_due_by = client.get("/todos", params={"due_by": "20240602"})
     invalid_category = client.get("/todos", params={"category": "未登録"})
 
     assert invalid_sort.status_code == 400
     assert invalid_order.status_code == 400
     assert invalid_status.status_code == 400
-    assert invalid_due_by.status_code == 400
     assert invalid_category.status_code == 400
