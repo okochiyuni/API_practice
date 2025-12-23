@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 
@@ -43,6 +44,12 @@ class Category(BaseModel):
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 app.state.todos: list[Todo] = []
 app.state.next_id: int = 1
 app.state.categories: list[Category] = []
@@ -183,6 +190,18 @@ def add_category(category: Category) -> Category:
 
     app.state.categories.append(category)
     return category
+
+
+@app.options("/categories")
+def options_categories() -> Response:
+    """CORSプリフライトリクエストに対応する。"""
+
+    headers = {
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Origin": "*",
+    }
+    return Response(status_code=204, headers=headers)
 
 
 def _ensure_category_exists(name: str) -> None:
