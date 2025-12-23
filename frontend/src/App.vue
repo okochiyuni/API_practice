@@ -331,18 +331,18 @@ onMounted(async () => {
   margin-top: 12px;
 }
 
-.slide-enter-active,
-.slide-leave-active {
+:deep(.slide-enter-active),
+:deep(.slide-leave-active) {
   transition: transform 420ms ease, opacity 420ms ease;
 }
 
-.slide-enter-from,
-.slide-leave-to {
+:deep(.slide-enter-from),
+:deep(.slide-leave-to) {
   opacity: 0;
   transform: translateY(8px);
 }
 
-.slide-move {
+:deep(.slide-move) {
   transition: transform 460ms ease;
 }
 
