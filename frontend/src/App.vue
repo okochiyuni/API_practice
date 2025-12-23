@@ -52,51 +52,59 @@
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">
-          <div>
-            <p class="eyebrow">新規作成 / 編集</p>
-            <h2>{{ editingId ? "タスクを更新" : "タスクを追加" }}</h2>
-          </div>
-          <span class="muted">API: {{ apiBase }}</span>
-        </div>
-
-        <form class="task-form" @submit.prevent="handleSubmit">
-          <label class="field">
-            <span>タイトル</span>
-            <input v-model.trim="form.title" type="text" placeholder="例: 企画書を仕上げる" required />
-          </label>
-
-          <label class="field">
-            <span>締切</span>
-            <input v-model="form.deadline" type="date" />
-          </label>
-
-          <label class="field">
-            <span>分類</span>
-            <input
-              v-model.trim="form.category"
-              type="text"
-              list="category-options"
-              placeholder="例: 仕事"
-              required
-            />
-            <datalist id="category-options">
-              <option v-for="cat in categories" :key="cat.name" :value="cat.name" />
-            </datalist>
-          </label>
-
-          <div class="actions">
-            <button type="submit" class="primary" :disabled="loading">
-              {{ editingId ? "更新する" : "追加する" }}
-            </button>
-            <button type="button" class="ghost" @click="resetForm">リセット</button>
-          </div>
-        </form>
-      </section>
     </main>
 
-    <AddTaskButton :label="editingId ? '編集中...' : 'タスクを追加'" @click="scrollToForm" />
+    <transition name="fade">
+      <div v-if="showFormModal" class="modal-backdrop" @click.self="closeFormModal">
+        <div class="modal" role="dialog" aria-modal="true" aria-label="タスクを追加">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">新規作成 / 編集</p>
+              <h2>{{ editingId ? "タスクを更新" : "タスクを追加" }}</h2>
+            </div>
+            <div class="modal-actions">
+              <span class="muted">API: {{ apiBase }}</span>
+              <button type="button" class="ghost" @click="closeFormModal">閉じる</button>
+            </div>
+          </div>
+
+          <form class="task-form" @submit.prevent="handleSubmit">
+            <label class="field">
+              <span>タイトル</span>
+              <input v-model.trim="form.title" type="text" placeholder="例: 企画書を仕上げる" required />
+            </label>
+
+            <label class="field">
+              <span>締切</span>
+              <input v-model="form.deadline" type="date" />
+            </label>
+
+            <label class="field">
+              <span>分類</span>
+              <input
+                v-model.trim="form.category"
+                type="text"
+                list="category-options"
+                placeholder="例: 仕事"
+                required
+              />
+              <datalist id="category-options">
+                <option v-for="cat in categories" :key="cat.name" :value="cat.name" />
+              </datalist>
+            </label>
+
+            <div class="actions">
+              <button type="submit" class="primary" :disabled="loading">
+                {{ editingId ? "更新する" : "追加する" }}
+              </button>
+              <button type="button" class="ghost" @click="resetForm">リセット</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </transition>
+
+    <AddTaskButton :label="editingId ? '編集中...' : 'タスクを追加'" @click="openCreateModal" />
   </div>
 </template>
 
@@ -116,9 +124,16 @@ const loading = ref(false);
 const error = ref("");
 const editingId = ref(null);
 const form = reactive({ title: "", deadline: "", category: "" });
+const showFormModal = ref(false);
 
-const scrollToForm = () => {
-  document.querySelector(".task-form")?.scrollIntoView({ behavior: "smooth" });
+const openCreateModal = () => {
+  resetForm();
+  showFormModal.value = true;
+};
+
+const closeFormModal = () => {
+  resetForm();
+  showFormModal.value = false;
 };
 
 const resetForm = () => {
@@ -150,6 +165,7 @@ const handleSubmit = async () => {
 
     await loadTodos();
     resetForm();
+    closeFormModal();
   } catch (err) {
     error.value = err.message || "保存に失敗しました";
   } finally {
@@ -227,7 +243,7 @@ const startEdit = (id) => {
   form.title = target.title;
   form.deadline = target.deadline;
   form.category = target.category;
-  scrollToForm();
+  showFormModal.value = true;
 };
 
 const checkResponse = async (response) => {
@@ -353,5 +369,41 @@ button.ghost {
 
 .muted {
   color: #6b7280;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 30;
+}
+
+.modal {
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
