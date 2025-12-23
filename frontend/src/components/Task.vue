@@ -103,7 +103,9 @@ const formattedDeadline = computed(() => {
   padding: 14px 16px;
   box-shadow: 0 10px 32px rgba(18, 42, 66, 0.08);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   border: 1px solid rgba(20, 42, 70, 0.05);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
