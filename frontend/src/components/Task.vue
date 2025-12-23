@@ -24,8 +24,28 @@
       >
         <svg viewBox="0 0 24 24" class="icon" aria-hidden="true" focusable="false">
           <path
-            d="M4 17.5V20h2.5l9.3-9.3-2.5-2.5L4 17.5Zm13.8-8.8c.2-.2.2-.5 0-.7l-2.8-2.8a.5.5 0 0 0-.7 0l-1.8 1.8 3.5 3.5 1.8-1.8Z"
+            d="M5.25 5.5c0-.41.34-.75.75-.75h6.75a.75.75 0 0 0 0-1.5H6a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 6 18.25h8.25a.75.75 0 0 0 0-1.5H6a.75.75 0 0 1-.75-.75Z"
             fill="currentColor"
+          />
+          <path
+            d="M8.75 7.75H12m-3.25 3H11"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+          />
+          <path
+            d="M13.85 7.05a.75.75 0 0 1 1.06 0l3.99 3.99a.75.75 0 0 1 0 1.06l-3.03 3.03-4.44 1.17a.5.5 0 0 1-.61-.61l1.17-4.44Z"
+            fill="currentColor"
+          />
+          <path
+            d="m16.05 8.74 2.21 2.21"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
           />
         </svg>
       </button>
@@ -111,11 +131,13 @@ const formattedDeadline = computed(() => {
   border-radius: 12px;
   border: 1px solid #d7def0;
   background: linear-gradient(135deg, #edf2ff, #f7f9ff);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #3d6df7;
   font-weight: 700;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  align-self: center;
 }
 
 .task-card.completed .toggle {
@@ -136,7 +158,7 @@ const formattedDeadline = computed(() => {
 
 .category {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: #6a7086;
   letter-spacing: 0.4px;
   text-transform: uppercase;
@@ -144,14 +166,14 @@ const formattedDeadline = computed(() => {
 
 .title {
   margin: 2px 0;
-  font-size: 17px;
+  font-size: 16px;
   color: #1c2340;
   line-height: 1.4;
 }
 
 .deadline {
   margin: 0;
-  font-size: 13px;
+  font-size: 12.5px;
   color: #40506b;
 }
 
