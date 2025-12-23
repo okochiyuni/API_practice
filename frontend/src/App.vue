@@ -333,7 +333,7 @@ onMounted(async () => {
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 220ms ease, opacity 220ms ease;
+  transition: transform 420ms ease, opacity 420ms ease;
 }
 
 .slide-enter-from,
@@ -343,7 +343,7 @@ onMounted(async () => {
 }
 
 .slide-move {
-  transition: transform 240ms ease;
+  transition: transform 460ms ease;
 }
 
 .task-form {
