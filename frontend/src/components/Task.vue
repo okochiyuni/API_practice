@@ -16,8 +16,32 @@
       </div>
     </div>
     <div class="actions" aria-label="タスクの操作">
-      <button type="button" class="ghost" @click="$emit('edit', todo.id)">編集</button>
-      <button type="button" class="danger" @click="$emit('delete', todo.id)">削除</button>
+      <button
+        type="button"
+        class="icon-button ghost"
+        aria-label="タスクを編集"
+        @click="$emit('edit', todo.id)"
+      >
+        <svg viewBox="0 0 24 24" class="icon" aria-hidden="true" focusable="false">
+          <path
+            d="M4 17.5V20h2.5l9.3-9.3-2.5-2.5L4 17.5Zm13.8-8.8c.2-.2.2-.5 0-.7l-2.8-2.8a.5.5 0 0 0-.7 0l-1.8 1.8 3.5 3.5 1.8-1.8Z"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="icon-button danger"
+        aria-label="タスクを削除"
+        @click="$emit('delete', todo.id)"
+      >
+        <svg viewBox="0 0 24 24" class="icon" aria-hidden="true" focusable="false">
+          <path
+            d="M18.3 5.7a1 1 0 0 0-1.4 0L12 10.6 7.1 5.7a1 1 0 0 0-1.4 1.4L10.6 12l-4.9 4.9a1 1 0 1 0 1.4 1.4L12 13.4l4.9 4.9a1 1 0 1 0 1.4-1.4L13.4 12l4.9-4.9a1 1 0 0 0 0-1.4Z"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
     </div>
   </article>
 </template>
@@ -138,28 +162,41 @@ const formattedDeadline = computed(() => {
 }
 
 .actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.actions button {
-  border-radius: 12px;
-  padding: 10px 12px;
+.icon-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   border: 1px solid transparent;
-  font-weight: 600;
-  font-size: 14px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
-.actions .ghost {
+.icon-button:active {
+  transform: translateY(1px);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-button.ghost {
   border-color: #dfe7f5;
   color: #2f3655;
   background: #f9fbff;
+  box-shadow: 0 6px 18px rgba(47, 54, 85, 0.08);
 }
 
-.actions .danger {
+.icon-button.danger {
   color: #fff;
   background: linear-gradient(135deg, #f45c43, #eb3349);
-  box-shadow: 0 10px 24px rgba(244, 92, 67, 0.25);
+  box-shadow: 0 8px 18px rgba(244, 92, 67, 0.2);
 }
 </style>
