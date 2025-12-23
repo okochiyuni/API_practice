@@ -157,6 +157,18 @@ def update_completed(todo_id: int, payload: TodoCompletionUpdate) -> Todo:
     raise HTTPException(status_code=404, detail="TODOが見つかりませんでした")
 
 
+@app.delete("/todos/{todo_id}", status_code=204)
+def delete_todo(todo_id: int) -> None:
+    """指定したTODOを削除する。"""
+
+    for index, todo in enumerate(app.state.todos):
+        if todo.id == todo_id:
+            app.state.todos.pop(index)
+            return None
+
+    raise HTTPException(status_code=404, detail="TODOが見つかりませんでした")
+
+
 @app.get("/categories")
 def list_categories() -> list[Category]:
     """利用可能な分類一覧を返す。"""
