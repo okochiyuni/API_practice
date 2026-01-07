@@ -40,7 +40,7 @@
         <p v-else-if="loading" class="muted">読み込み中...</p>
         <p v-else-if="todos.length === 0" class="muted">登録されたタスクはありません。</p>
 
-        <div class="task-grid" v-else>
+        <TransitionGroup name="slide" tag="div" class="task-grid" v-else>
           <Task
             v-for="todo in todos"
             :key="todo.id"
@@ -49,7 +49,7 @@
             @delete="deleteTodo"
             @edit="startEdit"
           />
-        </div>
+        </TransitionGroup>
       </section>
 
     </main>
@@ -329,6 +329,21 @@ onMounted(async () => {
   display: grid;
   gap: 12px;
   margin-top: 12px;
+}
+
+:deep(.slide-enter-active),
+:deep(.slide-leave-active) {
+  transition: transform 420ms ease, opacity 420ms ease;
+}
+
+:deep(.slide-enter-from),
+:deep(.slide-leave-to) {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+:deep(.slide-move) {
+  transition: transform 460ms ease;
 }
 
 .task-form {
